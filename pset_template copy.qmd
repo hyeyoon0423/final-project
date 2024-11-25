@@ -1,0 +1,34 @@
+---
+title: "PSet 1"
+author: "Hyeyoon Lee"
+date: "2024-10-05"
+format: html
+execute:
+  eval: true
+  echo: true
+---
+
+1. Data Loading and Cleaning
+# Question 1: Load the Public Profit and Emission Database (Google Spreadsheet) and OWID CO2 Dataset. Provide a summary of the datasets, including variables and their data types.
+
+```{python}
+import pandas as pd
+
+# Load Public Profit and Emission Database
+profit_emission_url = "https://docs.google.com/spreadsheets/d/19MQbZbrCu4HpAWe6NU92CioYQ7KE8FvD9vl-r9qSjJg/export?format=csv"
+profit_emission_data = pd.read_csv(profit_emission_url)
+
+# Load OWID CO2 Dataset
+owid_co2_url = "https://github.com/owid/co2-data/raw/master/owid-co2-data.csv"
+owid_co2_data = pd.read_csv(owid_co2_url)
+
+# Load CarbonPlan CDR Database
+cdr_url = "https://carbonplan.org/research/cdr-database/methods/cdr_data.csv"
+cdr_data = pd.read_csv(cdr_url)
+
+# Display dataset summaries
+print("Public Profit and Emission Database:")
+print(profit_emission_data.info())
+print("\nOWID CO2 Dataset:")
+print(owid_co2_data.info())
+```
