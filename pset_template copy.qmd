@@ -1,34 +1,64 @@
 ---
-title: "PSet 1"
-author: "Hyeyoon Lee"
+title: "Final project"
+author: "Hyeyoon Lee, Lianxia Chi"
 date: "2024-10-05"
 format: html
 execute:
   eval: true
   echo: true
 ---
-
 1. Data Loading and Cleaning
-# Question 1: Load the Public Profit and Emission Database (Google Spreadsheet) and OWID CO2 Dataset. Provide a summary of the datasets, including variables and their data types.
-
 ```{python}
 import pandas as pd
+import numpy as np
+data_path = "/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/"
+df_cait_2020 = pd.read_csv(f'{data_path}CO2 emissions by sector (CAIT, 2020).csv')
+df_cait_2021 = pd.read_csv(f'{data_path}CO2 emissions by sector (CAIT, 2021).csv')
+df_cdiac_2017 = pd.read_csv(f'{data_path}CO2 from gas - CDIAC (2017).csv')
+df_owid_co2 = pd.read_csv(f'{data_path}owid-co2-data.csv')
+df_energy = pd.read_csv(f'{data_path}owid-energy-data.csv')
+df_profit_2020 = pd.read_csv(f'{data_path}Public profit and emission database의 사본 - 2020.csv')
+df_profit_2021 = pd.read_csv(f'{data_path}Public profit and emission database의 사본 - 2021.csv')
+df_profit_2022 = pd.read_csv(f'{data_path}Public profit and emission database의 사본 - 2022.csv')
+df_profit_2020.rename(columns={
+    'Company Name': 'Company',
+    'Country/Territory ': 'Country',
+    'Industry': 'Industry',
+    'Profit': 'Profit',
+    'Scope 1-3 emissions': 'Emissions'
+}, inplace=True)
 
-# Load Public Profit and Emission Database
-profit_emission_url = "https://docs.google.com/spreadsheets/d/19MQbZbrCu4HpAWe6NU92CioYQ7KE8FvD9vl-r9qSjJg/export?format=csv"
-profit_emission_data = pd.read_csv(profit_emission_url)
+df_profit_2021.rename(columns={
+    'Company Name': 'Company',
+    '2021 Forbes Rank\n(2022 list) ': 'Global Rank',
+    '2021 Scope 1-3': 'Emissions',
+    '2021 Profit (Million USD)': 'Profit',
+    '2021 Sales / Revenue (Million USD)': 'Revenue'
+}, inplace=True)
 
-# Load OWID CO2 Dataset
-owid_co2_url = "https://github.com/owid/co2-data/raw/master/owid-co2-data.csv"
-owid_co2_data = pd.read_csv(owid_co2_url)
+df_profit_2022.rename(columns={
+    'Company Name': 'Company',
+    '2022 Scope 1-3 emissions': 'Emissions',
+    '2022 Profit (Million USD)': 'Profit',
+    '2022 Sales / Revenue (Million USD)': 'Revenue'
+}, inplace=True)
+df_profit_combined = pd.concat([df_profit_2020, df_profit_2021, df_profit_2022], ignore_index=True)
+df_profit_combined_filtered = df_profit_combined[['Company', 'Country', 'Industry', 'Profit', 'Emissions']].copy()
+df_profit_combined_filtered.loc[:, 'Profit'] = (
+    df_profit_combined_filtered['Profit']
+    .str.replace(r'[\s$,−]', '', regex=True) 
+    .astype(float)
+)
 
-# Load CarbonPlan CDR Database
-cdr_url = "https://carbonplan.org/research/cdr-database/methods/cdr_data.csv"
-cdr_data = pd.read_csv(cdr_url)
+df_profit_combined_filtered.loc[:, 'Emissions'] = (
+    df_profit_combined_filtered['Emissions']
+    .str.replace(r'[\s$,−]', '', regex=True) 
+    .replace('', np.nan)
+    .astype(float)
+)
 
-# Display dataset summaries
-print("Public Profit and Emission Database:")
-print(profit_emission_data.info())
-print("\nOWID CO2 Dataset:")
-print(owid_co2_data.info())
+emissions_median = df_profit_combined_filtered['Emissions'].median()
+df_profit_combined_filtered.loc[:, 'Emissions'].fillna(emissions_median, inplace=True)
+print(df_profit_combined_filtered.head())
+
 ```
