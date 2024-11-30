@@ -1,7 +1,7 @@
 ---
 title: "Final project"
 author: "Hyeyoon Lee, Lianxia Chi"
-date: "2024-10-05"
+date: "2024-11-30"
 format: html
 execute:
   eval: true
@@ -9,56 +9,130 @@ execute:
 ---
 1. Data Loading and Cleaning
 ```{python}
+#| echo: false
 import pandas as pd
+import altair as alt 
+from datetime import date
 import numpy as np
-data_path = "/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/"
-df_cait_2020 = pd.read_csv(f'{data_path}CO2 emissions by sector (CAIT, 2020).csv')
-df_cait_2021 = pd.read_csv(f'{data_path}CO2 emissions by sector (CAIT, 2021).csv')
-df_cdiac_2017 = pd.read_csv(f'{data_path}CO2 from gas - CDIAC (2017).csv')
-df_owid_co2 = pd.read_csv(f'{data_path}owid-co2-data.csv')
-df_energy = pd.read_csv(f'{data_path}owid-energy-data.csv')
-df_profit_2020 = pd.read_csv(f'{data_path}Public profit and emission database의 사본 - 2020.csv')
-df_profit_2021 = pd.read_csv(f'{data_path}Public profit and emission database의 사본 - 2021.csv')
-df_profit_2022 = pd.read_csv(f'{data_path}Public profit and emission database의 사본 - 2022.csv')
-df_profit_2020.rename(columns={
-    'Company Name': 'Company',
-    'Country/Territory ': 'Country',
-    'Industry': 'Industry',
-    'Profit': 'Profit',
-    'Scope 1-3 emissions': 'Emissions'
-}, inplace=True)
+alt.data_transformers.disable_max_rows() 
+import matplotlib.pyplot as plt
+import json
+import seaborn as sns
+import webbrowser
+```
 
-df_profit_2021.rename(columns={
-    'Company Name': 'Company',
-    '2021 Forbes Rank\n(2022 list) ': 'Global Rank',
-    '2021 Scope 1-3': 'Emissions',
-    '2021 Profit (Million USD)': 'Profit',
-    '2021 Sales / Revenue (Million USD)': 'Revenue'
-}, inplace=True)
+```{python}
+import pandas as pd
 
-df_profit_2022.rename(columns={
-    'Company Name': 'Company',
-    '2022 Scope 1-3 emissions': 'Emissions',
-    '2022 Profit (Million USD)': 'Profit',
-    '2022 Sales / Revenue (Million USD)': 'Revenue'
-}, inplace=True)
-df_profit_combined = pd.concat([df_profit_2020, df_profit_2021, df_profit_2022], ignore_index=True)
-df_profit_combined_filtered = df_profit_combined[['Company', 'Country', 'Industry', 'Profit', 'Emissions']].copy()
-df_profit_combined_filtered.loc[:, 'Profit'] = (
-    df_profit_combined_filtered['Profit']
-    .str.replace(r'[\s$,−]', '', regex=True) 
-    .astype(float)
+# Define function to clean numeric columns
+def convert_numeric_columns(df, cols):
+    """
+    Convert specified columns to numeric after cleaning unwanted characters.
+    """
+    for col in cols:
+        if col in df.columns:
+            # Use raw strings to avoid warnings
+            df[col] = (
+                df[col]
+                .replace(r'[\$,]', '', regex=True)  # Remove dollar signs and commas
+                .replace(r'[—]', '0', regex=True)  # Replace dashes with 0
+                .replace(' ', '', regex=True)  # Remove non-breaking spaces
+            )
+            df[col] = pd.to_numeric(df[col], errors='coerce')  # Convert to numeric
+    return df
+
+# Define function to standardize column names
+def standardize_columns(df, year=None):
+    """
+    Standardize column names: lowercase, replace spaces with underscores, and add year prefix.
+    """
+    df.columns = (
+        df.columns.str.strip().str.lower().str.replace(' ', '_').str.replace('\n', '_')
+    )
+    # Add year prefix if provided, except for key columns
+    if year:
+        df = df.rename(columns=lambda x: f"{x}_{year}" if x not in ['company_name', 'industry'] else x)
+    return df
+
+# File paths for the datasets
+file_2020 = '/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2020.csv'
+file_2021 = '/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2021.csv'
+file_2022 = '/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2022.csv'
+
+# Load datasets
+data_2020 = pd.read_csv(file_2020)
+data_2021 = pd.read_csv(file_2021)
+data_2022 = pd.read_csv(file_2022)
+
+# Standardize column names
+data_2020_cleaned = standardize_columns(data_2020, year=2020)
+data_2021_cleaned = standardize_columns(data_2021, year=2021)
+data_2022_cleaned = standardize_columns(data_2022, year=2022)
+
+# Convert numeric columns for each dataset
+numeric_cols_2020 = ['scope_1_ghg_emissions_tons_co₂e_2020', 'scope_2_emissions__tons_co₂e_2020', 'profit_2020']
+numeric_cols_2021 = ['2021_scope_1_emissions_tons_co₂e_2021', '2021_scope_2_emissions_tons_co₂e_2021', '2021_profit_(million_usd)_2021']
+numeric_cols_2022 = ['2022_scope_1_emissions_tons_co₂e_2022', '2022_scope_2_emissions_tons_co₂e_2022', '2022_profit_(millions_usd)_2022']
+
+data_2020_cleaned = convert_numeric_columns(data_2020_cleaned, numeric_cols_2020)
+data_2021_cleaned = convert_numeric_columns(data_2021_cleaned, numeric_cols_2021)
+data_2022_cleaned = convert_numeric_columns(data_2022_cleaned, numeric_cols_2022)
+
+# Combine datasets
+merged_data = pd.concat([data_2020_cleaned, data_2021_cleaned, data_2022_cleaned], ignore_index=True)
+
+# Drop duplicates based on 'company_name'
+if 'company_name' in merged_data.columns:
+    merged_data = merged_data.drop_duplicates(subset=['company_name'], keep='first')
+else:
+    print("Error: 'company_name' column is missing in the merged dataset.")
+
+# Check and print standardized column names
+print("Merged Dataset Columns:", merged_data.columns)
+
+# Check for missing values
+missing_values_summary = merged_data.isnull().sum()
+print("\nMissing Values Summary:")
+print(missing_values_summary)
+
+merged_data.to_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/merged_data.csv', index=False)
+```
+
+2. Plot
+```{python}
+# Load the dataset (verify the file path)
+merged_data_path = '/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/merged_data.csv'
+merged_data = pd.read_csv(merged_data_path)
+
+# Disable Altair's row limit for visualization
+alt.data_transformers.disable_max_rows()
+
+# Scatter Plot: Relationship between firm profitability and emissions
+scatter_plot = alt.Chart(merged_data).mark_circle(size=60).encode(
+    x=alt.X('scope_1_ghg_emissions_tons_co₂e_2020:Q', title='Scope 1 GHG Emissions (tons CO2e)'),
+    y=alt.Y('profit_2020:Q', title='Profit (Million USD)'),
+    color=alt.Color('industry:N', title='Industry'),
+    tooltip=['company_name:N', 'industry:N', 'profit_2020:Q', 'scope_1_ghg_emissions_tons_co₂e_2020:Q']
+).properties(
+    title="Profit vs. Scope 1 Emissions (2020)",
+    width=600,
+    height=400
 )
 
-df_profit_combined_filtered.loc[:, 'Emissions'] = (
-    df_profit_combined_filtered['Emissions']
-    .str.replace(r'[\s$,−]', '', regex=True) 
-    .replace('', np.nan)
-    .astype(float)
+# Bar Chart: Comparing emission efficiency by industry
+bar_chart = alt.Chart(merged_data).mark_bar().encode(
+    x=alt.X('industry:N', title='Industry', sort='-y'),
+    y=alt.Y('sum(scope_1_ghg_emissions_tons_co₂e_2020):Q', title='Total Scope 1 Emissions'),
+    color=alt.Color('industry:N', legend=None),
+    tooltip=['industry:N', 'sum(scope_1_ghg_emissions_tons_co₂e_2020):Q']
+).properties(
+    title="Total Scope 1 Emissions by Industry (2020)",
+    width=600,
+    height=400
 )
 
-emissions_median = df_profit_combined_filtered['Emissions'].median()
-df_profit_combined_filtered.loc[:, 'Emissions'].fillna(emissions_median, inplace=True)
-print(df_profit_combined_filtered.head())
+# Visualization
+scatter_plot.show()
+bar_chart.show()
 
 ```
