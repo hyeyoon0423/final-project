@@ -180,7 +180,6 @@ bar_chart_2021_all = alt.Chart(data_2021_cleaned).mark_bar().encode(
 bar_chart_2021_all.show()
 
 ```
-
 # 2022
 ```{python}
 
