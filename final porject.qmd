@@ -22,7 +22,6 @@ import webbrowser
 ```
 
 ```{python}
-import pandas as pd
 
 # Define function to clean numeric columns
 def convert_numeric_columns(df, cols):
