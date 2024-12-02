@@ -7,7 +7,7 @@ execute:
   eval: true
   echo: true
 ---
-1. Data Loading and Cleaning
+
 ```{python}
 #| echo: false
 import pandas as pd
@@ -20,7 +20,7 @@ import json
 import seaborn as sns
 import webbrowser
 ```
-
+1. Data Loading and Cleaning
 ```{python}
 
 # Define function to clean numeric columns
