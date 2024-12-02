@@ -1,0 +1,6 @@
+pandas
+altair
+matplotlib
+seaborn
+numpy
+quarto
