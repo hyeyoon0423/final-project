@@ -1,6 +1,8 @@
+# Required Python Packages
 pandas
 altair
 matplotlib
 seaborn
 numpy
+streamlit
 quarto
