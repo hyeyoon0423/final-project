@@ -96,6 +96,130 @@ print(missing_values_summary)
 
 merged_data.to_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/merged_data.csv', index=False)
 ```
+2. Plot 
+
+# scope 1 : Direct GHG emissions from owned or controlled sources (e.g., company facilities or vehicles).
+# Scope 2: Indirect GHG emissions from the generation of purchased electricity consumed by the company.
+# Scope 3: Indirect GHG emissions that occur in the value chain, both upstream and downstream (e.g., supply chain emissions, product use, etc.).
+
+
+# 2020
+```{python}
+scatter_plot_all = alt.Chart(merged_data).mark_circle(size=60).encode(
+    x=alt.X('scope_1_ghg_emissions_tons_co₂e_2020:Q', title='Scope 1 GHG Emissions (tons CO2e)'),
+    y=alt.Y('profit_2020:Q', title='Profit (Million USD)'),
+    color=alt.Color('industry:N', title='Industry'),
+    tooltip=['company_name:N', 'industry:N', 'profit_2020:Q', 'scope_1_ghg_emissions_tons_co₂e_2020:Q', 
+             'scope_2_emissions__tons_co₂e_2020:Q', 'scope_3_emissions_tons_co₂e_2020:Q']
+).properties(
+    title="Profit vs. Scope 1, 2, 3 Emissions (2020)",
+    width=600,
+    height=400
+)
+
+scatter_plot_all.show()
+bar_chart_all = alt.Chart(merged_data).mark_bar().encode(
+    x=alt.X('industry:N', title='Industry', sort='-y'),
+    y=alt.Y('sum(scope_1_ghg_emissions_tons_co₂e_2020):Q', title='Total Scope 1 Emissions'),
+    color=alt.Color('industry:N', legend=None),
+    tooltip=['industry:N', 'sum(scope_1_ghg_emissions_tons_co₂e_2020):Q', 'sum(scope_2_emissions__tons_co₂e_2020):Q', 'sum(scope_3_emissions_tons_co₂e_2020):Q']
+).properties(
+    title="Total Scope 1, 2, 3 Emissions by Industry (2020)",
+    width=600,
+    height=400
+)
+
+bar_chart_all.show()
+
+merged_data['total_scope_1_2_emissions'] = merged_data['scope_1_ghg_emissions_tons_co₂e_2020'] + merged_data['scope_2_emissions__tons_co₂e_2020']
+
+```
+
+# 2021
+```{python}
+# Load the 2021 dataset
+data_2021 = pd.read_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2021.csv')
+
+# Standardize columns for 2021
+data_2021_cleaned = standardize_columns(data_2021, year=2021)
+
+# Convert numeric columns for 2021
+numeric_cols_2021 = ['2021_scope_1_emissions_tons_co₂e_2021', '2021_scope_2_emissions__tons_co₂e_2021', '2021_scope_3_emissions_tons_co₂e_2021', '2021_profit_(million_usd)_2021']
+data_2021_cleaned = convert_numeric_columns(data_2021_cleaned, numeric_cols_2021)
+
+# Scatter Plot: Profit vs Scope 1, 2, 3 Emissions (2021)
+scatter_plot_2021_all = alt.Chart(data_2021_cleaned).mark_circle(size=60).encode(
+    x=alt.X('2021_scope_1_emissions_tons_co₂e_2021:Q', title='Scope 1 GHG Emissions (tons CO2e)'),
+    y=alt.Y('2021_profit_(million_usd)_2021:Q', title='Profit (Million USD)'),
+    color=alt.Color('industry:N', title='Industry'),
+    tooltip=['company_name:N', 'industry:N', '2021_profit_(million_usd)_2021:Q', 
+             '2021_scope_1_emissions_tons_co₂e_2021:Q', '2021_scope_2_emissions__tons_co₂e_2021:Q', 
+             '2021_scope_3_emissions_tons_co₂e_2021:Q']
+).properties(
+    title="Profit vs. Scope 1, 2, 3 Emissions (2021)",
+    width=600,
+    height=400
+)
+
+scatter_plot_2021_all.show()
+
+# Bar Chart: Total Scope 1, 2, 3 Emissions by Industry (2021)
+bar_chart_2021_all = alt.Chart(data_2021_cleaned).mark_bar().encode(
+    x=alt.X('industry:N', title='Industry', sort='-y'),
+    y=alt.Y('sum(2021_scope_1_emissions_tons_co₂e_2021):Q', title='Total Scope 1 Emissions'),
+    color=alt.Color('industry:N', legend=None),
+    tooltip=['industry:N', 'sum(2021_scope_1_emissions_tons_co₂e_2021):Q', 
+             'sum(2021_scope_2_emissions__tons_co₂e_2021):Q', 'sum(2021_scope_3_emissions_tons_co₂e_2021):Q']
+).properties(
+    title="Total Scope 1, 2, 3 Emissions by Industry (2021)",
+    width=600,
+    height=400
+)
+
+bar_chart_2021_all.show()
+
+```
+# 2022
+```{python}
+
+# Load the 2022 dataset
+data_2022 = pd.read_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2022.csv')
+
+# Standardize columns for 2022
+data_2022_cleaned = standardize_columns(data_2022, year=2022)
+
+# Convert numeric columns for 2022
+numeric_cols_2022 = ['2022_scope_1_emissions_tons_co₂e_2022', '2022_scope_2_emissions__tons_co₂e_2022', '2022_scope_3_emissions_tons_co₂e_2022', '2022_profit_(millions_usd)_2022']
+data_2022_cleaned = convert_numeric_columns(data_2022_cleaned, numeric_cols_2022)
+
+# Scatter Plot: Profit vs Scope 1, 2, 3 Emissions (2022)
+scatter_plot_2022_all = alt.Chart(data_2022_cleaned).mark_circle(size=60).encode(
+    x=alt.X('2022_scope_1_emissions_tons_co₂e_2022:Q', title='Scope 1 GHG Emissions (tons CO2e)'),
+    y=alt.Y('2022_profit_(millions_usd)_2022:Q', title='Profit (Million USD)'),
+    color=alt.Color('industry:N', title='Industry'),
+    tooltip=['company_name:N', 'industry:N', '2022_profit_(millions_usd)_2022:Q', 
+             '2022_scope_1_emissions_tons_co₂e_2022:Q', '2022_scope_2_emissions__tons_co₂e_2022:Q', 
+             '2022_scope_3_emissions_tons_co₂e_2022:Q']
+).properties(
+    title="Profit vs. Scope 1, 2, 3 Emissions (2022)",
+    width=600,
+    height=400
+)
+
+scatter_plot_2022_all.show()
+
+# Bar Chart: Total Scope 1, 2, 3 Emissions by Industry (2022)
+bar_chart_2022_all = alt.Chart(data_2022_cleaned).mark_bar().encode(
+    x=alt.X('industry:N', title='Industry', sort='-y'),
+    y=alt.Y('sum(2022_scope_1_emissions_tons_co₂e_2022):Q', title='Total Scope 1 Emissions'),
+    color=alt.Color('industry:N', legend=None),
+    tooltip=['industry:N', 'sum(2022_scope_1_emissions_tons_co₂e_2022):Q', 
+             'sum(2022_scope_2_emissions__tons_co₂e_2022):Q', 'sum(2022_scope_3_emissions_tons_co₂e_2022):Q']
+).properties(
+    title="Total Scope 1, 2, 3 Emissions by Industry (2022)",
+    width=600,
+    height=400
+)
 
 bar_chart_2022_all.show()
 ```
