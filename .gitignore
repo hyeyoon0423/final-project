@@ -1,1 +1,17 @@
+# System files
 .DS_Store
+
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Editor and backup files
+*~
+*.bak
