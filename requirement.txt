@@ -1,8 +1,9 @@
 # Required Python Packages
 pandas
+geopandas
 altair
 matplotlib
 seaborn
+requests
+shiny
 numpy
-streamlit
-quarto
