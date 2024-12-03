@@ -1,12 +1,22 @@
 # System files
+*.temp
+*.tmp
+*.log
+*.bak
 .DS_Store
 
 # Virtual environment
 venv/
+env/
+geo-env/
+shiny-app/venv/
 
 # Python cache
 __pycache__/
-*.py[cod]
+*.pyc
+*.pyo
+shiny-app/__pycache__/
+shiny-app/*.pyc
 
 # Logs and temporary files
 *.log
@@ -15,3 +25,6 @@ __pycache__/
 # Editor and backup files
 *~
 *.bak
+
+# Database
+*.sqlite3
