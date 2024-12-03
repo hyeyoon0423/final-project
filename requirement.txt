@@ -8,3 +8,5 @@ requests
 shiny
 numpy
 nltk
+wordcloud
+scikit-learn
