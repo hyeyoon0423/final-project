@@ -28,3 +28,5 @@ shiny-app/*.pyc
 
 # Database
 *.sqlite3
+
+nltk_data/
