@@ -96,11 +96,89 @@ print(missing_values_summary)
 
 merged_data.to_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/merged_data.csv', index=False)
 ```
+
+# Extra Credit 
+```{python}
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
+
+nltk.download('vader_lexicon')
+
+data = pd.read_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/merged_data.csv')
+
+
+data["company_name"] = data["company_name"].fillna("")
+data = data.dropna(subset=["country/territory_2020"]) 
+country_col = "country/territory_2020"
+
+
+sia = SentimentIntensityAnalyzer()
+data["company_sentiment"] = data["company_name"].apply(lambda x: sia.polarity_scores(str(x))["compound"])
+
+
+sentiment_summary = data.groupby(country_col)["company_sentiment"].mean().reset_index()
+
+
+sentiment_summary.sort_values(by="company_sentiment", ascending=False).head(10).plot(
+    x=country_col, y="company_sentiment", kind="bar", title="Average Sentiment by Country", legend=False
+)
+plt.xticks(rotation=45, ha='right')
+plt.ylabel("Average Sentiment Score")
+plt.xlabel("Country/Territory")
+plt.tight_layout()
+plt.show()
+
+
+vectorizer = TfidfVectorizer(max_features=5, stop_words="english")
+tfidf_matrix = vectorizer.fit_transform(data["company_name"])
+data["keywords"] = [", ".join(vectorizer.get_feature_names_out()) for _ in range(len(data))]
+
+
+print(data[["company_name", "keywords"]].head())
+
+
+text = " ".join(data["company_name"])
+wordcloud = WordCloud(width=800, height=400, background_color="white").generate(text)
+
+
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.title("WordCloud of Company Names")
+plt.show()
+```
+```{python}
+# Sentiment Analysis Findings
+print("### Sentiment Analysis Findings")
+print("- Switzerland had the highest average sentiment score (0.04), followed by France and the United States.")
+print("- The positive sentiment may be influenced by company names such as 'UBS Group' or 'Credit Suisse,' which might convey stability and reliability in the financial sector.")
+print("- On the other hand, countries with lower sentiment scores, such as Australia, may reflect more neutral or less emotionally charged company names.")
+
+# Keyword Analysis Findings
+print("\n### Keyword Analysis Findings")
+print("- The most frequent keywords included 'Bank,' 'Group,' 'Financial,' and 'China,' highlighting the dominance of banking and financial companies in the dataset.")
+print("- The prominence of 'China' reflects the significant presence of Chinese corporations, such as ICBC and China Construction Bank, in the global market.")
+print("- Less frequent keywords, like 'Energy' and 'Technology,' suggest that other industries, while present, are less dominant in this dataset.")
+
+# Limitations
+print("\n### Limitations")
+print("- Company names alone may not carry significant emotional connotations, leading to many neutral sentiment scores.")
+print("- The keyword extraction is limited to short company names, which may not provide sufficient context for deeper insights.")
+print("- Additional text data, such as company descriptions or news articles, would enhance the analysis.")
+```
+
+
 2. Plot 
 
 # scope 1 : Direct GHG emissions from owned or controlled sources (e.g., company facilities or vehicles).
 # Scope 2: Indirect GHG emissions from the generation of purchased electricity consumed by the company.
 # Scope 3: Indirect GHG emissions that occur in the value chain, both upstream and downstream (e.g., supply chain emissions, product use, etc.).
+
 
 # 2020
 ```{python}
@@ -144,6 +222,7 @@ bar_chart_2020 = alt.Chart(data_2020_cleaned).mark_bar().encode(
 )
 
 bar_chart_2020.show()
+plt.show()
 ```
 
 # 2021
@@ -188,11 +267,10 @@ bar_chart_2021_all = alt.Chart(data_2021_cleaned).mark_bar().encode(
 )
 
 bar_chart_2021_all.show()
-
+plt.show()
 ```
 # 2022
 ```{python}
-
 # Load the 2022 dataset
 data_2022 = pd.read_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2022.csv')
 
@@ -233,6 +311,7 @@ bar_chart_2022_all = alt.Chart(data_2022_cleaned).mark_bar().encode(
 )
 
 bar_chart_2022_all.show()
+plt.show()
 ```
 
 ## Shiny App: Dynamic Visualization
