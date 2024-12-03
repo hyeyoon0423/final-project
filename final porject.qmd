@@ -234,3 +234,7 @@ bar_chart_2022_all = alt.Chart(data_2022_cleaned).mark_bar().encode(
 
 bar_chart_2022_all.show()
 ```
+
+## Shiny App: Dynamic Visualization
+# The dynamic visualization component of this project is implemented using a Shiny app. 
+# The app is located in the `shiny-app` folder and can be launched using the following command:
