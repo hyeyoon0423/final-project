@@ -708,5 +708,159 @@ print("- Company names alone may not carry significant emotional connotations, l
 print("- The keyword extraction is limited to short company names, which may not provide sufficient context for deeper insights.")
 print("- Additional text data, such as company descriptions or news articles, would enhance the analysis.")
 ```
+Extra Credit:
 
+
+# Extra Credit 
+```{python}
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
+
+nltk.download('vader_lexicon')
+
+data = pd.read_csv('/Users/joying/Documents/GitHub/final-project/data/merged_data.csv')
+
+
+data["company_name"] = data["company_name"].fillna("")
+data = data.dropna(subset=["country/territory_2020"]) 
+country_col = "country/territory_2020"
+
+
+sia = SentimentIntensityAnalyzer()
+data["company_sentiment"] = data["company_name"].apply(lambda x: sia.polarity_scores(str(x))["compound"])
+
+
+sentiment_summary = data.groupby(country_col)["company_sentiment"].mean().reset_index()
+
+
+sentiment_summary.sort_values(by="company_sentiment", ascending=False).head(10).plot(
+    x=country_col, y="company_sentiment", kind="bar", title="Average Sentiment by Country", legend=False
+)
+plt.xticks(rotation=45, ha='right')
+plt.ylabel("Average Sentiment Score")
+plt.xlabel("Country/Territory")
+plt.tight_layout()
+plt.show()
+
+
+vectorizer = TfidfVectorizer(max_features=5, stop_words="english")
+tfidf_matrix = vectorizer.fit_transform(data["company_name"])
+data["keywords"] = [", ".join(vectorizer.get_feature_names_out()) for _ in range(len(data))]
+
+
+print(data[["company_name", "keywords"]].head())
+
+
+text = " ".join(data["company_name"])
+wordcloud = WordCloud(width=800, height=400, background_color="white").generate(text)
+
+
+plt.figure(figsize=(10, 5))
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.title("WordCloud of Company Names")
+plt.show()
+```
+```{python}
+# Sentiment Analysis Findings
+print("### Sentiment Analysis Findings")
+print("- Switzerland had the highest average sentiment score (0.04), followed by France and the United States.")
+print("- The positive sentiment may be influenced by company names such as 'UBS Group' or 'Credit Suisse,' which might convey stability and reliability in the financial sector.")
+print("- On the other hand, countries with lower sentiment scores, such as Australia, may reflect more neutral or less emotionally charged company names.")
+
+# Keyword Analysis Findings
+print("\n### Keyword Analysis Findings")
+print("- The most frequent keywords included 'Bank,' 'Group,' 'Financial,' and 'China,' highlighting the dominance of banking and financial companies in the dataset.")
+print("- The prominence of 'China' reflects the significant presence of Chinese corporations, such as ICBC and China Construction Bank, in the global market.")
+print("- Less frequent keywords, like 'Energy' and 'Technology,' suggest that other industries, while present, are less dominant in this dataset.")
+
+# Limitations
+print("\n### Limitations")
+print("- Company names alone may not carry significant emotional connotations, leading to many neutral sentiment scores.")
+print("- The keyword extraction is limited to short company names, which may not provide sufficient context for deeper insights.")
+print("- Additional text data, such as company descriptions or news articles, would enhance the analysis.")
+```
+# Extra Credit 
+
+```{python}
+import requests
+
+url = "https://www.nytimes.com/2024/11/13/climate/cop24-climate-finance.html"
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive"
+}
+
+try:
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()  # Check if the request was successful
+
+    with open("nyt_article.html", "w", encoding="utf-8") as file:
+        file.write(response.text)
+
+    print("Webpage successfully saved as 'nyt_article.html'.")
+
+except requests.exceptions.RequestException as e:
+    print(f"An error occurred: {e}")
+
+```
+
+```{python}
+from bs4 import BeautifulSoup
+
+# Open and parse the saved HTML file
+with open("nyt_article.html", "r", encoding="utf-8") as file:
+    soup = BeautifulSoup(file, "html.parser")
+
+# Extract text from all paragraph (<p>) tags
+paragraphs = soup.find_all("p")
+article_text = "\n".join([p.get_text() for p in paragraphs])
+
+# Print the first 500 characters to verify
+print("Extracted Article Content:")
+print(article_text[:500])
+
+# Optionally, save the extracted text to a new file
+with open("nyt_article_text.txt", "w", encoding="utf-8") as text_file:
+    text_file.write(article_text)
+
+print("Article content saved to 'nyt_article_text.txt'.")
+
+```
+
+```{python}
+from collections import Counter
+
+# Split text into words and count word frequencies
+words = article_text.split()
+word_counts = Counter(words)
+
+# Print the 10 most common words
+print("Most Common Words:")
+print(word_counts.most_common(10))
+
+```
+
+```{python}
+import spacy
+from spacytextblob.spacytextblob import SpacyTextBlob
+
+# Load SpaCy and add the TextBlob pipeline
+nlp = spacy.load("en_core_web_sm")
+nlp.add_pipe("spacytextblob")
+
+# Analyze sentiment of the extracted article
+doc = nlp(article_text)
+print(f"Sentiment Polarity: {doc._.blob.polarity}")
+print(f"Sentiment Subjectivity: {doc._.blob.subjectivity}")
+
+```
+This article discusses global financial negotiations at the COP29 climate summit in Baku, focusing on helping low-income countries adapt to climate change. The mention of "trillions" highlights the urgency and scale of financial support required. From the sentiment analysis, the tone is generally neutral (polarity: 0.0125) with some subjectivity (subjectivity: 0.4385), reflecting partial interpretation by the reporters regarding the summit's objectives.
 
