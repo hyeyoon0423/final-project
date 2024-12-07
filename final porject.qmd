@@ -10,6 +10,7 @@ execute:
 
 ```{python}
 #| echo: false
+
 import pandas as pd
 import altair as alt 
 from datetime import date
@@ -19,9 +20,20 @@ import matplotlib.pyplot as plt
 import json
 import seaborn as sns
 import webbrowser
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+from wordcloud import WordCloud
+import requests
+import io
+
 ```
 1. Data Loading and Cleaning
 ```{python}
+
+#| echo: false  
+#| include: false  
 
 # Define function to clean numeric columns
 def convert_numeric_columns(df, cols):
@@ -54,9 +66,9 @@ def standardize_columns(df, year=None):
     return df
 
 # File paths for the datasets
-file_2020 = '/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2020.csv'
-file_2021 = '/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2021.csv'
-file_2022 = '/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2022.csv'
+file_2020 = '/Users/joying/Documents/GitHub/final-project/data/Public profit and emission database의 사본 - 2020.csv'
+file_2021 = '/Users/joying/Documents/GitHub/final-project/data/Public profit and emission database의 사본 - 2021.csv'
+file_2022 = '/Users/joying/Documents/GitHub/final-project/data/Public profit and emission database의 사본 - 2022.csv'
 
 # Load datasets
 data_2020 = pd.read_csv(file_2020)
@@ -94,22 +106,16 @@ missing_values_summary = merged_data.isnull().sum()
 print("\nMissing Values Summary:")
 print(missing_values_summary)
 
-merged_data.to_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/merged_data.csv', index=False)
+merged_data.to_csv('/Users/joying/Documents/GitHub/final-project/data/merged_data.csv', index=False)
 ```
 
-
-
 2. Plot 
-
-# scope 1 : Direct GHG emissions from owned or controlled sources (e.g., company facilities or vehicles).
-# Scope 2: Indirect GHG emissions from the generation of purchased electricity consumed by the company.
-# Scope 3: Indirect GHG emissions that occur in the value chain, both upstream and downstream (e.g., supply chain emissions, product use, etc.).
-
-
 # 2020
 ```{python}
+#| echo: false  
+#| include: true  
 # Load 2020 dataset
-file_2020 = '/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2020.csv'
+file_2020 = '/Users/joying/Documents/GitHub/final-project/data/Public profit and emission database의 사본 - 2020.csv'
 data_2020 = pd.read_csv(file_2020)
 
 # Standardize column names for 2020
@@ -148,13 +154,15 @@ bar_chart_2020 = alt.Chart(data_2020_cleaned).mark_bar().encode(
 )
 
 bar_chart_2020.show()
-plt.show()
+plt.show() 
 ```
 
 # 2021
 ```{python}
+#| echo: false  
+#| include: true  
 # Load the 2021 dataset
-data_2021 = pd.read_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2021.csv')
+data_2021 = pd.read_csv('/Users/joying/Documents/GitHub/final-project/data/Public profit and emission database의 사본 - 2021.csv')
 
 # Standardize columns for 2021
 data_2021_cleaned = standardize_columns(data_2021, year=2021)
@@ -193,12 +201,15 @@ bar_chart_2021_all = alt.Chart(data_2021_cleaned).mark_bar().encode(
 )
 
 bar_chart_2021_all.show()
-plt.show()
+plt.show() 
+
 ```
 # 2022
 ```{python}
+#| echo: false  
+#| include: true  
 # Load the 2022 dataset
-data_2022 = pd.read_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/Public profit and emission database의 사본 - 2022.csv')
+data_2022 = pd.read_csv('/Users/joying/Documents/GitHub/final-project/data/Public profit and emission database의 사본 - 2022.csv')
 
 # Standardize columns for 2022
 data_2022_cleaned = standardize_columns(data_2022, year=2022)
@@ -237,14 +248,12 @@ bar_chart_2022_all = alt.Chart(data_2022_cleaned).mark_bar().encode(
 )
 
 bar_chart_2022_all.show()
-plt.show()
+plt.show() 
 ```
 
-## Shiny App: Dynamic Visualization
-# The dynamic visualization component of this project is implemented using a Shiny app. 
-# The app is located in the `shiny-app` folder and can be launched using the following command:
-
 ```{python}
+#| echo: false  
+#| include: true  
 ### Newest 
 from shiny import App, ui, render
 import pandas as pd
@@ -452,168 +461,12 @@ def server(input, output, session):
 # Create Shiny app
 app = App(app_ui, server)
 ```
-# Show Map
+
 ```{python}
-import pandas as pd
-import geopandas as gpd
-import matplotlib.pyplot as plt
-import numpy as np
-import requests
-import io
+#| echo: false  
+#| include: true  
 
-# Function to load and prepare data
-def load_and_prepare_data():
-    # Load data
-    file_path = '//Users/joying/Documents/GitHub/final-project/data/merged_data.csv'
-    data = pd.read_csv(file_path)
-
-    # Clean company names
-    data['company_name'] = data['company_name'].str.strip().str.upper()
-
-    # Map companies to countries (simplified example
-
-    company_to_country = {
-   
-    "JPMORGAN CHASE": "United States",
-    "BERKSHIRE HATHAWAY": "United States",
-    "APPLE": "United States",
-    "MICROSOFT": "United States",
-    "AMAZON": "United States",
-    "TESLA": "United States",
-    "GOOGLE": "United States",
-    "META": "United States",
-    "WALMART": "United States",
-    "BANK OF AMERICA": "United States",
-    "CITIGROUP": "United States",
-    "WELLS FARGO": "United States",
-    "VERIZON COMMUNICATIONS": "United States",
-
-   
-    "ICBC": "China",
-    "CHINA CONSTRUCTION BANK": "China",
-    "PING AN INSURANCE GROUP": "China",
-    "AGRICULTURAL BANK OF CHINA": "China",
-    "BANK OF CHINA": "China",
-    "TENCENT HOLDINGS": "China",
-    "ALIBABA GROUP": "China",
-    "SINOPEC": "China",
-    "CHINA MOBILE": "China",
-    "CHINA MERCHANTS BANK": "China",
-    "PETROCHINA": "China",
-    "INDUSTRIAL BANK": "China",
-
- 
-    "SAUDI ARABIAN OIL COMPANY (SAUDI ARAMCO)": "Saudi Arabia",
-
-   
-    "TOYOTA MOTOR": "Japan",
-    "SONY": "Japan",
-    "HONDA MOTOR": "Japan",
-    "MITSUBISHI UFJ FINANCIAL": "Japan",
-    "NIPPON TELEGRAPH & TEL": "Japan",
-
-    
-    "SAMSUNG ELECTRONICS": "South Korea",
-    "HYUNDAI MOTOR": "South Korea",
-
-
-    "VOLKSWAGEN GROUP": "Germany",
-    "BMW GROUP": "Germany",
-    "DAIMLER": "Germany",
-    "SIEMENS": "Germany",
-    "ALLIANZ": "Germany",
-
-
-    "HSBC HOLDINGS": "United Kingdom",
-    "BP": "United Kingdom",
-    "SHELL": "United Kingdom",
-    "BARCLAYS": "United Kingdom",
-
-   
-    "RELIANCE INDUSTRIES": "India",
-    "STATE BANK OF INDIA": "India",
-    "HDFC BANK": "India",
-
-    
-    "BNP PARIBAS": "France",
-    "AXA GROUP": "France",
-    "TOTALENERGIES": "France",
-
- 
-    "NESTLÉ": "Switzerland",
-    "ROCHE HOLDING": "Switzerland",
-    "NOVARTIS": "Switzerland",
-
- 
-    "GAZPROM": "Russia",
-    "SBERBANK": "Russia",
-    "ROSNEFT": "Russia",
-
-  
-    "RBC": "Canada",
-    "TD BANK GROUP": "Canada",
-    "BANK OF MONTREAL": "Canada",
-
-   
-    "PETROBRAS": "Brazil",
-    "ITAÚ UNIBANCO HOLDING": "Brazil",
-
-    
-    "BHP GROUP": "Australia",
-    "COMMONWEALTH BANK": "Australia",
-
- 
-    "PHILIPS": "Netherlands",
-    "HEINEKEN": "Netherlands",
-}
-
-    
-
-    # Map country names
-    data['country'] = data['company_name'].map(company_to_country).fillna('UNKNOWN')
-
-    # Calculate total profit and total emissions
-    profit_columns = ['profit_2020', '2021_profit_(million_usd)_2021', '2022_profit_(millions_usd)_2022']
-    emission_columns = [
-        'scope_1_ghg_emissions_tons_co₂e_2020', 'scope_2_emissions__tons_co₂e_2020',
-        '2021_scope_1_emissions_tons_co₂e_2021', '2021_scope_2_emissions_tons_co₂e_2021',
-        '2022_scope_1_emissions_tons_co₂e_2022', '2022_scope_2_emissions_tons_co₂e_2022'
-    ]
-    data[profit_columns + emission_columns] = data[profit_columns + emission_columns].fillna(0).apply(pd.to_numeric, errors='coerce')
-    data['total_profit'] = data[profit_columns].sum(axis=1)
-    data['total_emissions'] = data[emission_columns].sum(axis=1)
-
-    # Group data by country
-    country_data = data.groupby('country', as_index=False).agg({'total_profit': 'sum', 'total_emissions': 'sum'})
-
-    # Download world map data
-    url = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson"
-    response = requests.get(url)
-    geojson_data = io.StringIO(response.text)
-    world = gpd.read_file(geojson_data)
-
-    # Standardize and fix country names
-    world['NAME'] = world['NAME'].str.strip().str.upper().replace({
-        'UNITED STATES OF AMERICA': 'UNITED STATES'
-    })
-    country_data['country'] = country_data['country'].str.strip().str.upper()
-
-    # Merge world map with data
-    world = world.merge(country_data, how='left', left_on='NAME', right_on='country')
-
-    # Fill missing values
-    world['total_profit'] = world['total_profit'].fillna(0)
-    world['total_emissions'] = world['total_emissions'].fillna(0)
-
-    # Log-transform data
-    world['log_total_profit'] = world['total_profit'].apply(lambda x: np.log1p(x))
-    world['log_total_emissions'] = world['total_emissions'].apply(lambda x: np.log1p(x))
-
-    return data, world
-
-# Load data
-data, world_data = load_and_prepare_data()
-
+## Map
 # Plot the map
 def plot_map(data, map_type="Profit"):
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -634,85 +487,100 @@ plot_map(world_data, map_type="Profit")
 plot_map(world_data, map_type="Emissions")
 ```
 
-# Extra Credit 
+
+
 ```{python}
-import nltk
-from nltk.sentiment import SentimentIntensityAnalyzer
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-import matplotlib.pyplot as plt
-from wordcloud import WordCloud
-
-
-nltk.download('vader_lexicon')
-
-data = pd.read_csv('/Users/hyeyoonsmacbook/Desktop/Github/final-project/data/merged_data.csv')
-
-
-data["company_name"] = data["company_name"].fillna("")
-data = data.dropna(subset=["country/territory_2020"]) 
-country_col = "country/territory_2020"
-
-
-sia = SentimentIntensityAnalyzer()
-data["company_sentiment"] = data["company_name"].apply(lambda x: sia.polarity_scores(str(x))["compound"])
-
-
-sentiment_summary = data.groupby(country_col)["company_sentiment"].mean().reset_index()
-
-
-sentiment_summary.sort_values(by="company_sentiment", ascending=False).head(10).plot(
-    x=country_col, y="company_sentiment", kind="bar", title="Average Sentiment by Country", legend=False
-)
-plt.xticks(rotation=45, ha='right')
-plt.ylabel("Average Sentiment Score")
-plt.xlabel("Country/Territory")
-plt.tight_layout()
-plt.show()
-
-
-vectorizer = TfidfVectorizer(max_features=5, stop_words="english")
-tfidf_matrix = vectorizer.fit_transform(data["company_name"])
-data["keywords"] = [", ".join(vectorizer.get_feature_names_out()) for _ in range(len(data))]
-
-
-print(data[["company_name", "keywords"]].head())
-
-
-text = " ".join(data["company_name"])
-wordcloud = WordCloud(width=800, height=400, background_color="white").generate(text)
-
-
-plt.figure(figsize=(10, 5))
-plt.imshow(wordcloud, interpolation="bilinear")
-plt.axis("off")
-plt.title("WordCloud of Company Names")
-plt.show()
-```
-```{python}
-# Sentiment Analysis Findings
-print("### Sentiment Analysis Findings")
-print("- Switzerland had the highest average sentiment score (0.04), followed by France and the United States.")
-print("- The positive sentiment may be influenced by company names such as 'UBS Group' or 'Credit Suisse,' which might convey stability and reliability in the financial sector.")
-print("- On the other hand, countries with lower sentiment scores, such as Australia, may reflect more neutral or less emotionally charged company names.")
-
-# Keyword Analysis Findings
-print("\n### Keyword Analysis Findings")
-print("- The most frequent keywords included 'Bank,' 'Group,' 'Financial,' and 'China,' highlighting the dominance of banking and financial companies in the dataset.")
-print("- The prominence of 'China' reflects the significant presence of Chinese corporations, such as ICBC and China Construction Bank, in the global market.")
-print("- Less frequent keywords, like 'Energy' and 'Technology,' suggest that other industries, while present, are less dominant in this dataset.")
-
-# Limitations
-print("\n### Limitations")
-print("- Company names alone may not carry significant emotional connotations, leading to many neutral sentiment scores.")
-print("- The keyword extraction is limited to short company names, which may not provide sufficient context for deeper insights.")
-print("- Additional text data, such as company descriptions or news articles, would enhance the analysis.")
-```
-Extra Credit:
-
+#| echo: false  
+#| include: false 
 
 # Extra Credit 
+import requests
+
+url = "https://www.nytimes.com/2024/11/13/climate/cop24-climate-finance.html"
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive"
+}
+
+try:
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()  # Check if the request was successful
+
+    with open("nyt_article.html", "w", encoding="utf-8") as file:
+        file.write(response.text)
+
+    print("Webpage successfully saved as 'nyt_article.html'.")
+
+except requests.exceptions.RequestException as e:
+    print(f"An error occurred: {e}")
+
+```
+
 ```{python}
+#| echo: false  
+#| include: false 
+from bs4 import BeautifulSoup
+
+# Open and parse the saved HTML file
+with open("nyt_article.html", "r", encoding="utf-8") as file:
+    soup = BeautifulSoup(file, "html.parser")
+
+# Extract text from all paragraph (<p>) tags
+paragraphs = soup.find_all("p")
+article_text = "\n".join([p.get_text() for p in paragraphs])
+
+# Print the first 500 characters to verify
+print("Extracted Article Content:")
+print(article_text[:500])
+
+# Optionally, save the extracted text to a new file
+with open("nyt_article_text.txt", "w", encoding="utf-8") as text_file:
+    text_file.write(article_text)
+
+print("Article content saved to 'nyt_article_text.txt'.")
+
+```
+
+```{python}
+#| echo: false  
+#| include: false  
+from collections import Counter
+
+# Split text into words and count word frequencies
+words = article_text.split()
+word_counts = Counter(words)
+
+# Print the 10 most common words
+print("Most Common Words:")
+print(word_counts.most_common(10))
+
+```
+
+```{python}
+#| echo: false  
+#| include: false  
+import spacy
+from spacytextblob.spacytextblob import SpacyTextBlob
+
+# Load SpaCy and add the TextBlob pipeline
+nlp = spacy.load("en_core_web_sm")
+nlp.add_pipe("spacytextblob")
+
+# Analyze sentiment of the extracted article
+doc = nlp(article_text)
+print(f"Sentiment Polarity: {doc._.blob.polarity}")
+print(f"Sentiment Subjectivity: {doc._.blob.subjectivity}")
+
+```
+
+
+```{python}
+#| echo: false  
+#| include: false   
+
+# Extra Credit 
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
@@ -767,6 +635,8 @@ plt.title("WordCloud of Company Names")
 plt.show()
 ```
 ```{python}
+#| echo: false  
+#| include: false  
 # Sentiment Analysis Findings
 print("### Sentiment Analysis Findings")
 print("- Switzerland had the highest average sentiment score (0.04), followed by France and the United States.")
@@ -785,9 +655,71 @@ print("- Company names alone may not carry significant emotional connotations, l
 print("- The keyword extraction is limited to short company names, which may not provide sufficient context for deeper insights.")
 print("- Additional text data, such as company descriptions or news articles, would enhance the analysis.")
 ```
+# Write-Up
+
+## Research Question
+This project investigates the relationship between corporate profitability and carbon emissions (Scope 1, 2, and 3) from 2020 to 2022. The goal is to analyze how emissions efficiency varies by industry, explore shifts in emissions and profitability over time, and provide actionable insights to guide businesses and policymakers toward low-carbon practices.
+
+### Key Questions:
+- Which industries achieve high profitability with low emissions, and which struggle to reduce emissions while maintaining profits?
+- How do emissions and profitability trends evolve from 2020 to 2022?
+- What are the policy and business implications of these findings?
+
+## Approach and Coding Methodology
+### Datasets:
+- **Source**: Public Profit and Emissions Database (2020–2022)
+- **Variables**: Firm-level Scope 1, 2, and 3 emissions, profitability.
+
+### Data Preparation:
+- Cleaned and standardized datasets by:
+  - Removing non-numeric characters (e.g., "$", ",").
+  - Resolving missing values.
+  - Standardizing column names.
+  - Merging annual datasets.
+
+### Visualization:
+- Static visualizations (scatter and bar charts) via Altair.
+- Dynamic dashboard (Shiny app) for interactive exploration.
+
+### Challenges:
+- **Inter-industry Comparisons**: Emissions baselines differ (e.g., Banking vs. Oil & Gas).
+- **Shiny App Performance**: Filtering large datasets required optimization.
+
+## Key Findings
+### 2020: Baseline Year
+- **High Emission Industries**: Utilities and Oil & Gas dominate emissions (>160M tons CO₂e).
+- **Low Emission Industries**: IT Software, Banking, and Pharmaceuticals lead in profitability with minimal emissions.
+
+### 2021: Post-Pandemic Recovery
+- **Rising Emissions**: Transportation and Mining saw increases due to demand recovery.
+- **Persistent Trends**: Oil & Gas remained a high-emission, high-profit sector.
+
+### 2022: Shift Toward Sustainability
+- **Decarbonization Efforts**: Utilities began adopting renewable energy.
+- **Profitability Gaps**: Low-emission industries solidified their economic viability.
+
+## Shiny App Description
+The Shiny app provides interactive visualizations of:
+- **Profit Map**: Log-transformed total profits by country.
+- **Emissions Map**: Log-transformed total emissions by country.
+Users can filter and explore trends interactively.
+
+## Policy Implications and Recommendations
+- **Low-Emission Industries**: Showcase profitability of sustainable practices.
+- **High-Emission Sectors**: Require significant investments in renewables and carbon capture.
+- **Policy Measures**:
+  - Decarbonization incentives: Subsidies for green technologies.
+  - Carbon pricing: Stricter taxation to reduce emissions.
+
+## Directions for Future Work
+- Conduct industry-specific studies to uncover tailored solutions.
+- Integrate policy metrics (e.g., carbon tax rates) for a comprehensive analysis.
+
 # Extra Credit 
 
 ```{python}
+#| echo: false  
+#| include: false  
 import requests
 
 url = "https://www.nytimes.com/2024/11/13/climate/cop24-climate-finance.html"
@@ -813,6 +745,8 @@ except requests.exceptions.RequestException as e:
 ```
 
 ```{python}
+#| echo: false  
+#| include: true  
 from bs4 import BeautifulSoup
 
 # Open and parse the saved HTML file
@@ -836,6 +770,8 @@ print("Article content saved to 'nyt_article_text.txt'.")
 ```
 
 ```{python}
+#| echo: false  
+#| include: true  
 from collections import Counter
 
 # Split text into words and count word frequencies
@@ -849,6 +785,8 @@ print(word_counts.most_common(10))
 ```
 
 ```{python}
+#| echo: false  
+#| include: true  
 import spacy
 from spacytextblob.spacytextblob import SpacyTextBlob
 
@@ -863,4 +801,5 @@ print(f"Sentiment Subjectivity: {doc._.blob.subjectivity}")
 
 ```
 This article discusses global financial negotiations at the COP29 climate summit in Baku, focusing on helping low-income countries adapt to climate change. The mention of "trillions" highlights the urgency and scale of financial support required. From the sentiment analysis, the tone is generally neutral (polarity: 0.0125) with some subjectivity (subjectivity: 0.4385), reflecting partial interpretation by the reporters regarding the summit's objectives.
+
 
