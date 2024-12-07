@@ -27,6 +27,7 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 from wordcloud import WordCloud
 import requests
 import io
+import folium
 
 ```
 1. Data Loading and Cleaning
@@ -493,7 +494,7 @@ plot_map(world_data, map_type="Emissions")
 #| echo: false  
 #| include: false 
 
-# Extra Credit 
+# Extra Credit by Lianxia
 import requests
 
 url = "https://www.nytimes.com/2024/11/13/climate/cop24-climate-finance.html"
@@ -580,7 +581,7 @@ print(f"Sentiment Subjectivity: {doc._.blob.subjectivity}")
 #| echo: false  
 #| include: false   
 
-# Extra Credit 
+# Extra Credit by Hyeyoon 
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
 import pandas as pd
