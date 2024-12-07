@@ -11,3 +11,7 @@ nltk
 wordcloud
 scikit-learn
 ipython
+beautifulsoup4
+lxml
+spacy
+spacytextblob
