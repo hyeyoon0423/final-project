@@ -463,9 +463,37 @@ def server(input, output, session):
 app = App(app_ui, server)
 ```
 
+### screenshot for Shiny 
+```{python}
+#| echo: false
+#| include: true
+## new screenshot for shiny
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
+# File paths for the images
+profit_map_path = "/Users/joying/Documents/GitHub/final-project/picture/PHOTO-2024-12-07-14-56-45.jpg"
+emission_map_path = "/Users/joying/Documents/GitHub/final-project/picture/PHOTO-2024-12-07-14-56-44.jpg"
+
+# Display the profit map
+profit_map = mpimg.imread(profit_map_path)
+plt.imshow(profit_map)
+plt.axis("off")  # Hide axes
+plt.title("Profit Map")
+plt.show()
+
+# Display the emission map
+emission_map = mpimg.imread(emission_map_path)
+plt.imshow(emission_map)
+plt.axis("off")  # Hide axes
+plt.title("Emission Map")
+plt.show()
+```
+
+
 ```{python}
 #| echo: false  
-#| include: true  
+#| include: false
 
 ## Map
 # Plot the map
